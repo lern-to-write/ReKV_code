@@ -66,8 +66,12 @@ def rekv_attention_forward(
             if type(past_key_value) is ContextManager:  # retrieval
                 if past_key_value.retrieved_block_indices is None:  # retrieve based on global_q (question's query)
                     past_k, past_v = past_key_value.get_retrieved_kv(global_q)
+                    # past_k, past_v = past_key_value.custom_get_retrieved_kv(global_q)
+
                 else:  # retrieve based on pre-computed retrieved_block_indices
                     past_k, past_v = past_key_value.get_retrieved_kv()
+                    # past_k, past_v = past_key_value.custom_get_retrieved_kv()
+
                 updata_kv_cache = False  # We do not update KV cache with the input KV (h_k, h_v) because we only use it for retrieval
             else:  # sliding-window attention
                 past_k = past_key_value[0]

@@ -63,7 +63,7 @@ def eval_qaego4d(args):
                     "--n_local", str(args.n_local),
                     "--retrieve_size", str(args.retrieve_size),
                     "--save_dir", save_dir,
-                    "--anno_path", "data/qaego4d/test_mc.json",
+                    "--anno_path", "/obs/users/yiyu/root/autodl-tmp/LLaVA-NeXT/cache_folder/data/hub/datasets--Becomebright--QAEgo4D-MC-test/snapshots/ee31cc135035dad4d14c9c2d95bd7afca64d341c/test_mc.json",
                     "--debug", args.debug,
                     "--num_chunks", str(num_chunks),
                     "--chunk_idx", str(idx)]

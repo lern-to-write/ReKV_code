@@ -3,8 +3,7 @@ import torch
 from typing import Optional, Tuple
 
 from .dot_production_attention import get_multi_stage_dot_production_attention
-
-# bbbb
+import torch.nn.functional as F
 # Allocate a fixed-size block of GPU memory specifically for storing the KV-Cache of the local_window.
 class CudaCache:
     def __init__(self, num_units, unit_size, dtype):
@@ -178,6 +177,22 @@ class VectorTensor:
 
         assert logits.dim() == 1 and logits.size(0) == self.length
         return logits
+    def get_uniqueness_score(self):
+        frame_means = self.data[:self.length].float()  # (T, D), convert to fp32 to prevent numerical overflow
+
+        video_mean = frame_means.mean(dim=0)  # 形状变为 [channel]
+
+        # 步骤 2: 扩展视频均值以匹配帧 Tensor 的形状
+        video_mean_expanded = video_mean.unsqueeze(0)  # 形状 [1, channel]
+        video_mean_expanded = video_mean_expanded.expand_as(frame_means)  # 形状 [frame_number, channel]
+
+        # 步骤 3: 计算每帧与视频均值的余弦相似度
+        # dim=1 表示在 channel 维度上计算相似度
+        cos_scores = F.cosine_similarity(frame_means, video_mean_expanded, dim=1)  # 输出形状 [frame_number]
+
+        return cos_scores
+
+
 
     def __len__(self):
         return self.length
@@ -445,7 +460,14 @@ class ContextManager:
             else:  # The local window is already filled, but the number of input frames is less than 'topk'.
                 ret = [list(range(len(self.global_blocks[0]))) for _ in range(self.num_units)]
         else:
-            logits = torch.stack([self.block_k[u].get_cosine_similarity(global_h_q[u]) for u in range(self.num_units)])  # (batch_size, block_num)
+            ###########################################################################################################################################################################################################
+            # logits = torch.stack([self.block_k[u].get_cosine_similarity(global_h_q[u]) for u in range(self.num_units)])  # (batch_size, block_num)
+            logits = torch.stack([self.block_k[u].get_uniqueness_score() for u in range(self.num_units)])  # (batch_size, block_num)
+
+
+           # In [1]: logits.shape Out[1]: torch.Size([1, 600])        In [4]: len(self.block_k[0]) Out[4]: 600         In [2]: global_h_q[0].shape  Out[2]: torch.Size([3584])
+
+            ############################################################################################################################################################################################################
 
         if logits is not None:
             self.similarity = logits
@@ -601,9 +623,11 @@ class ContextManager:
                 global_block_k = self.global_remainder[0][:, :, global_remainder_st:global_remainder_st + self.block_size, :]
                 global_block_k = self._from_group_kv(global_block_k)  # (batch_size, num_heads, length, dim_head)
 
+                ###################################################################################################################################################
                 global_block_k = global_block_k.mean(dim=-2, keepdim=False)  # (batch_size, num_heads, dim_head)
                 global_block_k = global_block_k.reshape(self.num_units, -1)  # (batch_size, num_heads * dim_head)
                 global_block_k = global_block_k[:, None, :]  # (batch_size, 1, num_heads * dim_head)
+                #####################################################################################################################################################
                 for u in range(self.num_units):
                     self.block_k[u].append(global_block_k[u])
                 

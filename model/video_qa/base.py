@@ -33,13 +33,13 @@ MODELS = {
         'load_func': llava_onevision_rekv.load_model,
         'model_class': LlavaOnevisionForConditionalGeneration,
         'processor_class': LlavaOnevisionProcessor,
-        'model_path': 'model_zoo/llava-onevision-qwen2-7b-ov-hf',
+        'model_path': '/obs/users/yiyu/root/autodl-tmp/LLaVA-NeXT/cache_folder/model_zoo/llava-onevision-qwen2-7b-ov-hf',
     },
     'llava_ov_72b': {
         'load_func': llava_onevision_rekv.load_model,
         'model_class': LlavaOnevisionForConditionalGeneration,
         'processor_class': LlavaOnevisionProcessor,
-        'model_path': 'model_zoo/llava-onevision-qwen2-72b-ov-hf',
+        'model_path': '/obs/users/yiyu/root/autodl-tmp/LLaVA-NeXT/cache_folder/model_zoo/llava-onevision-qwen2-7b-ov-hf',
     },
     'video_llava_7b': {
         'load_func': video_llava_rekv.load_model,
