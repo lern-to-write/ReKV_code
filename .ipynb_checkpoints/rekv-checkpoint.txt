@@ -1,0 +1,6 @@
+source /etc/network_turbo
+export HF_HOME="/root/autodl-tmp/LLaVA-NeXT/root/autodl-tmp/LLaVA-NeXT/cache_folder"
+conda activate llava
+
+export HF_ENDPOINT=https://hf-mirror.com
+
